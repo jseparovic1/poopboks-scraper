@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Invoke;
 
-use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7\Response;
 use Intervention\Image\ImageManager;
@@ -29,13 +30,41 @@ final class GetMagazine extends Command
         $manager = new ImageManager();
         $numbers = range(1, 194);
         $parts = [
-            '2_0_0', '2_1_0', '2_2_0', '2_3_0', '2_4_0',
-            '2_0_1', '2_1_1', '2_2_1', '2_3_1', '2_4_1',
-            '2_0_2', '2_1_2', '2_2_2', '2_3_2', '2_4_2',
-            '2_0_3', '2_1_3', '2_2_3', '2_3_3', '2_4_3',
-            '2_0_4', '2_1_4', '2_2_4', '2_3_4', '2_4_4',
-            '2_0_5', '2_1_5', '2_2_5', '2_3_5', '2_4_5',
-            '2_0_6', '2_1_6', '2_2_6', '2_3_6', '2_4_6',
+            '2_0_0',
+            '2_1_0',
+            '2_2_0',
+            '2_3_0',
+            '2_4_0',
+            '2_0_1',
+            '2_1_1',
+            '2_2_1',
+            '2_3_1',
+            '2_4_1',
+            '2_0_2',
+            '2_1_2',
+            '2_2_2',
+            '2_3_2',
+            '2_4_2',
+            '2_0_3',
+            '2_1_3',
+            '2_2_3',
+            '2_3_3',
+            '2_4_3',
+            '2_0_4',
+            '2_1_4',
+            '2_2_4',
+            '2_3_4',
+            '2_4_4',
+            '2_0_5',
+            '2_1_5',
+            '2_2_5',
+            '2_3_5',
+            '2_4_5',
+            '2_0_6',
+            '2_1_6',
+            '2_2_6',
+            '2_3_6',
+            '2_4_6',
         ];
 
         $io->title('Scraping album images from www.popboks.com.');
@@ -50,7 +79,11 @@ final class GetMagazine extends Command
 
                     for ($i = 0; $i < count($parts); $i++) {
                         $imagePartsPromises[$i] = $client->getAsync(
-                            sprintf('%s/%s/%s/%s.jpg', $url, $number, $page, $parts[$i])
+                            sprintf('%s/%s/%s/%s.jpg', $url, $number, $page, $parts[$i]),
+                            [
+                                'connect_timeout' => 5,
+                                'delay' => 0.5,
+                            ]
                         );
                     }
 
@@ -58,10 +91,14 @@ final class GetMagazine extends Command
                         assert($imagePartResponse instanceof Response);
                         $imageParts[$i] = $imagePartResponse->getBody();
                     }
-                } catch (Exception $exception) {
-                    $io->note(sprintf('Going to next magazine number.'));
+                } catch (TransferException $exception) {
+                    if ($exception instanceof RequestException) {
+                        $io->note(sprintf('Going to next magazine number.'));
+                        break;
+                    }
 
-                    break;
+                    $io->text(sprintf('Retry page %s', $page));
+                    continue;
                 }
 
                 $imageParts = array_map(
