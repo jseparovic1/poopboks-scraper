@@ -9,7 +9,7 @@ use Symfony\Component\Console\Application;
 
 $application = new Application();
 
-$getImagesCommand = new \Invoke\GetAlbumCovers();
+$getImagesCommand = new \Invoke\GetMagazine();
 $application->add($getImagesCommand);
 $application->setDefaultCommand($getImagesCommand->getName());
 $application->run();
