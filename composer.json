@@ -1,0 +1,22 @@
+{
+    "name": "invoke/dzuboks-image-scrapper",
+    "description": "Get images from popboks.com jubox",
+    "type": "library",
+    "require": {
+        "symfony/console": "^5.1",
+        "intervention/image": "^2.5",
+        "symfony/http-client": "^5.1"
+    },
+    "require-dev": {
+        "vimeo/psalm": "^3.16",
+        "friendsofphp/php-cs-fixer": "^2.16"
+    },
+    "autoload": {
+        "psr-4": {
+            "Invoke\\": "src/"
+        }
+    },
+    "scripts": {
+        "scrape": "php bin/scrape.php"
+    }
+}
