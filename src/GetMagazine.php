@@ -6,14 +6,13 @@ namespace Invoke;
 
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7\Response;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use GuzzleHttp\Promise;
-use function GuzzleHttp\default_user_agent;
 
 final class GetMagazine extends Command
 {
@@ -65,7 +64,12 @@ final class GetMagazine extends Command
                     break;
                 }
 
-                $imageParts = array_map(fn(string $part) => $manager->make($part), $imageParts);
+                $imageParts = array_map(
+                    function (string $part) use ($manager) {
+                        return $manager->make($part);
+                    },
+                    $imageParts
+                );
 
                 $canvasWidth = 0;
                 foreach (range(0, 4) as $row) {
